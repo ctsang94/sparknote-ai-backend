@@ -1,47 +1,34 @@
-import express from 'express';
-import OpenAI from "openai";
+import express from 'express'
+import OpenAI from 'openai'
 import 'dotenv/config'
-import axios from 'axios';
+import axios from 'axios'
 
-const {OPENAI_API_KEY, organization_id, Google_API_Key} = process.env
+const { OPENAI_API_KEY, organization_id, Google_API_Key } = process.env
 
-const app = express();
-const port = 8000;
+const app = express()
+const port = 8000
 
-app.use(express.json());
+app.use(express.json())
 
-app.get('/books', async(req, res)=>{
-    const {query} = req.query;
+app.get('/books', async (req, res) => {
+    const { query } = req.query
 
-    if(!query){
-        return res.status(400).json({error: 'Query parameter is required'});
+    if (!query) {
+        return res.status(400).json({ error: 'Query parameter is required' })
     }
     try {
-        const apiKey = Google_API_Key;
+        const apiKey = Google_API_Key
         console.log(query)
-        const response = await axios.get(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}`);
+        const response = await axios.get(
+            `https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}`
+        )
         console.log(response)
         res.json(response.data)
-    }catch (error){
-        res.status(500).json({error: 'Something went wrong'});
+    } catch (error) {
+        res.status(500).json({ error: 'Something went wrong' })
     }
 })
 
-// const openai = new OpenAI({
-//     apiKey: OPENAI_API_KEY,
-//     organization: organization_id
-// });
-
-// const completion = await openai.chat.completions.create({
-//     model: "gpt-4o-mini",
-//     messages: [
-//         { role: "system", content: "Pretend like your sparknotes.com"},
-//         {
-//             role: "user",
-//             content: "Give me an overview summary, characters, antagonist, protagonist, theme of the book catcher in the rye" },
-//     ],
-// });
-
-// console.log(completion.choices[0].message);
-
-app.listen(port, ()=>{console.log(`Server is running on ${port}`)})
+app.listen(port, () => {
+    console.log(`Server is running on ${port}`)
+})
