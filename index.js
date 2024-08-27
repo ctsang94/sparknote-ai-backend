@@ -2,28 +2,64 @@ import express from 'express'
 import OpenAI from 'openai'
 import 'dotenv/config'
 import axios from 'axios'
+import cors from 'cors'
 
 const { OPENAI_API_KEY, organization_id, Google_API_Key } = process.env
 
+const corsOptions = {
+    origin: '*', // use your actual domain name (or localhost), using * is not recommended
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
+    allowedHeaders: [
+        'Content-Type',
+        'Origin',
+        'X-Requested-With',
+        'Accept',
+        'x-client-key',
+        'x-client-token',
+        'x-client-secret',
+        'Authorization',
+    ],
+    credentials: true,
+}
+
 const app = express()
+app.use(cors(corsOptions))
 const port = 8000
 
 app.use(express.json())
 
 app.get('/books', async (req, res) => {
-    const { query } = req.query
+    const { query, page = 1, limit = 10 } = req.query
 
     if (!query) {
         return res.status(400).json({ error: 'Query parameter is required' })
     }
     try {
         const apiKey = Google_API_Key
-        console.log(query)
+        const startIndex = (page - 1) * limit
+        const maxResults = Number(limit)
+
         const response = await axios.get(
-            `https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}`
+            `https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}&startIndex=${startIndex}&maxResults=${maxResults}`
         )
-        console.log(response)
-        res.json(response.data)
+
+        const books = response.data.items.map((book) => {
+            const volumeInfo = book.volumeInfo
+            return {
+                title: volumeInfo.title,
+                authors: volumeInfo.authors,
+                publishedDate: volumeInfo.publishedDate,
+                thumbnail: volumeInfo.imageLinks?.thumbnail,
+                description: volumeInfo.description,
+            }
+        })
+
+        res.json({
+            totalItems: response.data.totalItems,
+            currentPage: Number(page),
+            totalPages: Math.ceil(response.data.totalItems / limit),
+            books: response.data,
+        })
     } catch (error) {
         res.status(500).json({ error: 'Something went wrong' })
     }
