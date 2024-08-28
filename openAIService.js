@@ -10,19 +10,15 @@ const openai = new OpenAI({
 
 export const generateBookSummary = async (bookDetails) => {
     try {
-        const openai = new OpenAI({
-            apiKey: OPENAI_API_KEY,
-            organization: organization_id,
-        })
-
         const completion = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
                 { role: 'system', content: 'Pretend like your sparknotes.com' },
                 {
                     role: 'user',
-                    content:
-                        'Give me an overview summary, characters, antagonist, protagonist, theme of the book catcher in the rye',
+                    content: `Give me an overview summary, characters, antagonist, protagonist, and theme of the book ${
+                        bookDetails.title
+                    } by ${bookDetails.authors}`,
                 },
             ],
         })

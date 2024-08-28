@@ -3,6 +3,7 @@ import OpenAI from 'openai'
 import 'dotenv/config'
 import axios from 'axios'
 import cors from 'cors'
+import { generateBookSummary } from './openAIService.js'
 
 const { OPENAI_API_KEY, organization_id, Google_API_Key } = process.env
 
@@ -62,6 +63,19 @@ app.get('/books', async (req, res) => {
         })
     } catch (error) {
         res.status(500).json({ error: 'Something went wrong' })
+    }
+})
+
+app.post('/openaiservice', async (req, res) => {
+    try {
+        const bookDetails = req.body
+
+        const aiResponse = await generateBookSummary(bookDetails)
+
+        res.json({ aiContent: aiResponse })
+    } catch (error) {
+        console.log('Error getting book summary: ', error)
+        res.status(500).json({ error: 'Failed to generate book sumary' })
     }
 })
 
